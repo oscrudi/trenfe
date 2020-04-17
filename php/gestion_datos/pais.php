@@ -24,33 +24,18 @@
     }
 
     function getAllPais(){
-        $query = "SELECT p.codigo AS codigo, p.nombre AS nombre FROM pais AS p ORDER BY p.nombre;";
-        $result = consultarBBDD($query);
-        if( $result ){
-            return printPais($result);
-        } else {
-            return false;
-        }
+        $query = "SELECT codigo, nombre FROM pais ORDER BY nombre;";
+        return consultarBBDD($query);
     }
 
     function getPaisPorCodigo($codigo){
-        $query = "SELECT p.codigo AS codigo, p.nombre AS nombre FROM pais AS p WHERE p.codigo = '" . $codigo . "' ORDER BY p.nombre;";
-        $result = consultarBBDD($query);
-        if( $result ){
-            return printPais($result);
-        } else {
-            return false;
-        }
+        $query = "SELECT codigo, nombre FROM pais WHERE codigo = '" . $codigo . "' ORDER BY nombre;";
+        return consultarBBDD($query);
     }
 
     function getPaisPorNombre($nombre){
-        $query = "SELECT * FROM pais WHERE nombre LIKE '" . $nombre . "%' ORDER BY nombre;";
-        $result = consultarBBDD($query);
-        if( $result ){
-            return printPais($result);
-        } else {
-            return false;
-        }
+        $query = "SELECT codigo, nombre FROM pais WHERE nombre LIKE '" . $nombre . "%' ORDER BY nombre;";
+        return consultarBBDD($query);
     }
 
 ?>

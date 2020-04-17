@@ -25,62 +25,32 @@
 
     function getAllLocalidad(){
         $query = "SELECT l.codigo AS codigo, l.nombre AS nombre, l.codigo_provincia AS codigo_provincia, pr.nombre AS provincia, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM localidad AS l INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo ORDER BY l.nombre;";
-        $result = consultarBBDD($query);
-        if( $result ){
-            return printLocalidad($result);
-        } else {
-            return false;
-        }
+        return consultarBBDD($query);
     }
 
     function getLocalidadPorCodigo($codigo){
         $query = "SELECT l.codigo AS codigo, l.nombre AS nombre, l.codigo_provincia AS codigo_provincia, pr.nombre AS provincia, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM localidad AS l INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo WHERE l.codigo = '" . $codigo . "' ORDER BY l.nombre;";
-        $result = consultarBBDD($query);
-        if( $result ){
-            return printLocalidad($result);
-        } else {
-            return false;
-        }
+        return consultarBBDD($query);
     }
 
     function getLocalidadPorProvincia($provincia){
         $query = "SELECT l.codigo AS codigo, l.nombre AS nombre, l.codigo_provincia AS codigo_provincia, pr.nombre AS provincia, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM localidad AS l INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo WHERE l.codigo_provincia = '" . $provincia . "' ORDER BY l.nombre;";
-        $result = consultarBBDD($query);
-        if( $result ){
-            return printLocalidad($result);
-        } else {
-            return false;
-        }
+        return consultarBBDD($query);
     }
 
     function getLocalidadPorRegion($region){
         $query = "SELECT l.codigo AS codigo, l.nombre AS nombre, l.codigo_provincia AS codigo_provincia, pr.nombre AS provincia, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM localidad AS l INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo WHERE pr.codigo_region = '" . $region . "' ORDER BY l.nombre;";
-        $result = consultarBBDD($query);
-        if( $result ){
-            return printLocalidad($result);
-        } else {
-            return false;
-        }
+        return consultarBBDD($query);
     }
 
     function getLocalidadPorPais($pais){
         $query = "SELECT l.codigo AS codigo, l.nombre AS nombre, l.codigo_provincia AS codigo_provincia, pr.nombre AS provincia, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM localidad AS l INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo WHERE r.codigo_pais = '" . $pais . "' ORDER BY l.nombre;";
-        $result = consultarBBDD($query);
-        if( $result ){
-            return printLocalidad($result);
-        } else {
-            return false;
-        }
+        return consultarBBDD($query);
     }
 
     function getLocalidadPorNombre($nombre){
         $query = "SELECT l.codigo AS codigo, l.nombre AS nombre, l.codigo_provincia AS codigo_provincia, pr.nombre AS provincia, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM localidad AS l INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo WHERE l.nombre LIKE '" . $nombre . "%' ORDER BY l.nombre;";
-        $result = consultarBBDD($query);
-        if( $result ){
-            return printLocalidad($result);
-        } else {
-            return false;
-        }
+        return consultarBBDD($query);
     }
 
 ?>

@@ -25,42 +25,22 @@
 
     function getAllRegion(){
         $query = "SELECT r.codigo AS codigo, r.nombre AS nombre, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM region AS r INNER JOIN pais AS p ON r.codigo_pais = p.codigo ORDER BY r.nombre;";
-        $result = consultarBBDD($query);
-        if( $result ){
-            return printRegion($result);
-        } else {
-            return false;
-        }
+        return consultarBBDD($query);
     }
 
     function getRegionPorCodigo($codigo){
         $query = "SELECT r.codigo AS codigo, r.nombre AS nombre, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM region AS r INNER JOIN pais AS p ON r.codigo_pais = p.codigo WHERE r.codigo = '" . $codigo . "' ORDER BY r.nombre;";
-        $result = consultarBBDD($query);
-        if( $result ){
-            return printRegion($result);
-        } else {
-            return false;
-        }
+        return consultarBBDD($query);
     }
 
     function getRegionPorPais($pais){
         $query = "SELECT r.codigo AS codigo, r.nombre AS nombre, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM region AS r INNER JOIN pais AS p ON r.codigo_pais = p.codigo WHERE r.codigo_pais = '" . $pais . "' ORDER BY r.nombre;";
-        $result = consultarBBDD($query);
-        if( $result ){
-            return printRegion($result);
-        } else {
-            return false;
-        }
+        return consultarBBDD($query);
     }
 
     function getRegionPorNombre($nombre){
         $query = "SELECT r.codigo AS codigo, r.nombre AS nombre, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM region AS r INNER JOIN pais AS p ON r.codigo_pais = p.codigo WHERE r.nombre LIKE '" . $nombre . "%' ORDER BY r.nombre;";
-        $result = consultarBBDD($query);
-        if( $result ){
-            return printRegion($result);
-        } else {
-            return false;
-        }
+        return consultarBBDD($query);
     }
 
 ?>
