@@ -1,6 +1,9 @@
 <?php
 
     function addRuta($codigo, $codigos_estacion, $tiempos_llegada){
+        if( !$codigos_estacion || count($codigos_estacion) < 2 ){
+            return false;
+        }
         $tipo_ruta = calcularTipoRuta($codigos_estacion);
         $queryRuta = "INSERT INTO ruta (codigo, activo, tipo) VALUES ('" . $codigo . "',1 ," . $tipo_ruta . ");";
         $correcto = modificarBBDD($queryRuta);
@@ -23,6 +26,7 @@
     }
 
     function calcularTipoRuta($codigos_estacion){
+        $codigos_estacion = array_unique($codigos_estacion);
         $geografia_estaciones = array();
         foreach( $codigos_estacion as $codigo_estacion ){
             $result = getEstacionPorCodigo($codigo_estacion);
@@ -84,7 +88,7 @@
         return modificarBBDD($query);
     }
 
-    function addEstacionARuta($ruta, $estacion, $orden, $tiempo_llegada){
+    function addEstacionToRuta($ruta, $estacion, $orden, $tiempo_llegada){
         $result = getEstacionesPorRuta($ruta);
         if( !$result ){
             return false;
@@ -93,15 +97,67 @@
         while( $row = $result->fetch_assoc() ){
             array_push($estaciones_ruta, $row);
         }
-        if( !$estaciones_ruta[$orden - 1] ){
-            //TODO:Insertar nueva estación
-            return true;
+        $codigos_estacion = array();
+        foreach( $estaciones_ruta as $estacion_ruta ){
+            array_push($codigos_estacion, $estacion_ruta["codigo_estacion"]);
         }
-        for( $i = ($orden - 1); $i < count($estaciones_ruta); $i++ ){
-            //TODO:Modificar orden de estación
+        array_push($codigos_estacion, $estacion);
+        $nuevo_tipo_ruta = calcularTipoRuta($codigos_estacion);
+        $queryAddEstacion = "INSERT INTO ruta_estacion (ruta, estacion, orden, tiempo_llegada) VALUES ('" . $ruta . "', " . $estacion . ", " . $orden . ", " . $tiempo_llegada . ");";
+        // Si no hay otra estación en ese orden, se añade.
+        if( !array_key_exists(($orden - 1), $estaciones_ruta) ){
+            updateTipoRuta($ruta, $nuevo_tipo_ruta);
+            return modificarBBDD($queryAddEstacion);
         }
-        //TODO:Insertar nueva estación
+        // Si hay otra estación en ese orden, se modifica el orden y luego se añade
+        for( $i = (count($estaciones_ruta) - 1); $i > ($orden - 2); $i-- ){
+            $nuevo_orden = ($estaciones_ruta[$i]["orden"] + 1);
+            $queryUpdateOrden = "UPDATE ruta_estacion SET orden = " . $nuevo_orden . " WHERE ruta = '" . $estaciones_ruta[$i]["codigo_ruta"] . "' AND estacion = " . $estaciones_ruta[$i]["codigo_estacion"] . " AND orden = " . $estaciones_ruta[$i]["orden"] . ";";
+            modificarBBDD($queryUpdateOrden);
+        }
+        updateTipoRuta($ruta, $nuevo_tipo_ruta);
+        return modificarBBDD($queryAddEstacion);
+    }
+
+    function deleteEstacionFromRuta($ruta, $estacion, $orden){
+        $result = getEstacionesPorRuta($ruta);
+        if( !$result || $result->num_rows < 3 ){
+            return false;
+        }
+        $estaciones_ruta = array();
+        while( $row = $result->fetch_assoc() ){
+            array_push($estaciones_ruta, $row);
+        }
+        $ultima_estacion = 0;
+        foreach( $estaciones_ruta as $estacion_ruta ){
+            $ultima_estacion = ($estacion_ruta["orden"] > $ultima_estacion ? $estacion_ruta["orden"] : $ultima_estacion);
+        }
+        $query = "DELETE FROM ruta_estacion WHERE ruta = '" . $ruta . "' AND estacion = " . $estacion . " AND orden = " . $orden . ";";
+        modificarBBDD($query);
+        $result = getEstacionesPorRuta($ruta);
+        $estaciones_ruta = array();
+        while( $row = $result->fetch_assoc() ){
+            array_push($estaciones_ruta, $row);
+        }
+        $codigos_estacion = array();
+        foreach( $estaciones_ruta as $estacion_ruta ){
+            array_push($codigos_estacion, $estacion_ruta["codigo_estacion"]);
+        }
+        $nuevo_tipo_ruta = calcularTipoRuta($codigos_estacion);
+        updateTipoRuta($ruta, $nuevo_tipo_ruta);
+        if( $orden <= $ultima_estacion ){
+            for( $i = ($orden - 1); $i < count($estaciones_ruta); $i++ ){
+                $nuevo_orden = ($estaciones_ruta[$i]["orden"] - 1);
+                $queryUpdateOrden = "UPDATE ruta_estacion SET orden = " . $nuevo_orden . " WHERE ruta = '" . $estaciones_ruta[$i]["codigo_ruta"] . "' AND estacion = " . $estaciones_ruta[$i]["codigo_estacion"] . " AND orden = " . $estaciones_ruta[$i]["orden"] . ";";
+                modificarBBDD($queryUpdateOrden);
+            }
+        }
         return true;
+    }
+
+    function updateTipoRuta($ruta, $nuevo_tipo_ruta){
+        $query = "UPDATE ruta SET tipo = " . $nuevo_tipo_ruta . " WHERE codigo = '" . $ruta . "';";
+        return modificarBBDD($query);
     }
 
     function printRuta($result) {
@@ -115,7 +171,7 @@
     function printRutaEstaciones($result) {
         $output = "";
         while( $row = $result->fetch_assoc() ){
-            $output .= "Código: " . $row["codigo"] . " - Activo: " . $row["activo"] . " - Código Tipo: " . $row["codigo_tipo"] . " - Tipo: " . $row["tipo"] . " - Código Estación: " . $row["codigo_estacion"] . " - Estación: " . $row["estacion"] . " - Orden: " . $row["orden"] . " - Tiempo llegada: " . $row["tiempo_llegada"] . "<br>";
+            $output .= "Código: " . $row["codigo_ruta"] . " - Activo: " . $row["activo"] . " - Código Tipo: " . $row["codigo_tipo"] . " - Tipo: " . $row["tipo"] . " - Código Estación: " . $row["codigo_estacion"] . " - Estación: " . $row["estacion"] . " - Orden: " . $row["orden"] . " - Tiempo llegada: " . $row["tiempo_llegada"] . "<br>";
         }
         return $output;
     }
@@ -126,7 +182,7 @@
     }
 
     function getEstacionesPorRuta($ruta){
-        $query = "SELECT r.codigo AS codigo, r.activo AS activo, r.tipo AS codigo_tipo, tr.nombre AS tipo, re.estacion AS codigo_estacion, re.orden AS orden, re.tiempo_llegada AS tiempo_llegada, e.nombre AS estacion FROM ruta AS r INNER JOIN tipo_ruta AS tr ON r.tipo = tr.codigo INNER JOIN ruta_estacion AS re ON r.codigo = re.ruta INNER JOIN estacion AS e ON re.estacion = e.codigo WHERE r.codigo = '" . $ruta . "' ORDER BY re.orden;";
+        $query = "SELECT r.codigo AS codigo_ruta, r.activo AS activo, r.tipo AS codigo_tipo, tr.nombre AS tipo, re.estacion AS codigo_estacion, re.orden AS orden, re.tiempo_llegada AS tiempo_llegada, e.nombre AS estacion FROM ruta AS r INNER JOIN tipo_ruta AS tr ON r.tipo = tr.codigo INNER JOIN ruta_estacion AS re ON r.codigo = re.ruta INNER JOIN estacion AS e ON re.estacion = e.codigo WHERE r.codigo = '" . $ruta . "' ORDER BY re.orden;";
         return consultarBBDD($query);
     }
 
