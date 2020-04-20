@@ -21,9 +21,22 @@
     }
 
     function desactivarEstacion($codigo){
-        //TODO: desactivar rutas sin estaciones activas, sin estacion de origen y sin estacion de destino.
         $query = "UPDATE estacion SET activo = 0 WHERE codigo = '" . $codigo . "';";
-        return modificarBBDD($query);
+        $correcto = modificarBBDD($query);
+        if( !$correcto ){
+            return false;
+        }
+        $result = getRutasPorEstacion($codigo);
+        $rutas = array();
+        while( $row = $result->fetch_assoc() ){
+            array_push($rutas, $row["codigo"]);
+        }
+        foreach( $rutas as $ruta ){
+            $estaciones = getEstacionesPorRuta($ruta);
+            if( $estaciones->num_rows < 2 ){
+                desactivarRuta($ruta);
+            }
+        }
     }
 
     function printEstacion($result) {
