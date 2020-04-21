@@ -189,7 +189,7 @@
     function printRutaEstaciones($result) {
         $output = "";
         while( $row = $result->fetch_assoc() ){
-            $output .= "Código: " . $row["codigo_ruta"] . " - Activo: " . $row["activo"] . " - Código Tipo: " . $row["codigo_tipo"] . " - Tipo: " . $row["tipo"] . " - Código Estación: " . $row["codigo_estacion"] . " - Estación: " . $row["estacion"] . " - Orden: " . $row["orden"] . " - Tiempo llegada: " . $row["tiempo_llegada"] . " - Estación Activo: " . $row["estacion_activo"] . "<br>";
+            $output .= "Código Estación: " . $row["codigo_estacion"] . " - Estación: " . $row["estacion"] . " - Orden: " . $row["orden"] . " - Tiempo llegada: " . $row["tiempo_llegada"] . " - Estación Activo: " . $row["estacion_activo"] . "<br>";
         }
         return $output;
     }
@@ -200,6 +200,11 @@
         } else {
             $query = "SELECT r.codigo AS codigo, r.activo AS activo, r.tipo AS codigo_tipo, tr.nombre AS tipo FROM ruta AS r INNER JOIN tipo_ruta AS tr ON r.tipo = tr.codigo ORDER BY r.codigo;";
         }
+        return consultarBBDD($query);
+    }
+
+    function getRutaPorCodigo($codigo){
+        $query = "SELECT r.codigo AS codigo, r.activo AS activo, r.tipo AS codigo_tipo, tr.nombre AS tipo FROM ruta AS r INNER JOIN tipo_ruta AS tr ON r.tipo = tr.codigo WHERE r.codigo = '" . $codigo . "';";
         return consultarBBDD($query);
     }
 
@@ -219,20 +224,20 @@
 
     function getEstacionesPorRuta($ruta, $activos = true){
         if( $activos ){
-            $query = "SELECT r.codigo AS codigo_ruta, r.activo AS activo, r.tipo AS codigo_tipo, tr.nombre AS tipo, re.estacion AS codigo_estacion, re.orden AS orden, re.tiempo_llegada AS tiempo_llegada, e.nombre AS estacion, e.activo AS estacion_activo FROM ruta AS r INNER JOIN tipo_ruta AS tr ON r.tipo = tr.codigo INNER JOIN ruta_estacion AS re ON r.codigo = re.ruta INNER JOIN estacion AS e ON re.estacion = e.codigo WHERE r.codigo = '" . $ruta . "' AND e.activo = 1 ORDER BY re.orden;";
+            $query = "SELECT re.estacion AS codigo_estacion, re.orden AS orden, re.tiempo_llegada AS tiempo_llegada, e.nombre AS estacion, e.activo AS estacion_activo FROM ruta AS r INNER JOIN tipo_ruta AS tr ON r.tipo = tr.codigo INNER JOIN ruta_estacion AS re ON r.codigo = re.ruta INNER JOIN estacion AS e ON re.estacion = e.codigo WHERE r.codigo = '" . $ruta . "' AND e.activo = 1 ORDER BY re.orden;";
         } else {
-            $query = "SELECT r.codigo AS codigo_ruta, r.activo AS activo, r.tipo AS codigo_tipo, tr.nombre AS tipo, re.estacion AS codigo_estacion, re.orden AS orden, re.tiempo_llegada AS tiempo_llegada, e.nombre AS estacion, e.activo AS estacion_activo FROM ruta AS r INNER JOIN tipo_ruta AS tr ON r.tipo = tr.codigo INNER JOIN ruta_estacion AS re ON r.codigo = re.ruta INNER JOIN estacion AS e ON re.estacion = e.codigo WHERE r.codigo = '" . $ruta . "' ORDER BY re.orden;";
+            $query = "SELECT re.estacion AS codigo_estacion, re.orden AS orden, re.tiempo_llegada AS tiempo_llegada, e.nombre AS estacion, e.activo AS estacion_activo FROM ruta AS r INNER JOIN tipo_ruta AS tr ON r.tipo = tr.codigo INNER JOIN ruta_estacion AS re ON r.codigo = re.ruta INNER JOIN estacion AS e ON re.estacion = e.codigo WHERE r.codigo = '" . $ruta . "' ORDER BY re.orden;";
         }
         return consultarBBDD($query);
     }
 
     function getEstacionesPorOrigenDestino($ruta, $orden_origen = false, $orden_destino = false){
         if( $orden_origen && $orden_origen > 0 && $orden_destino && $orden_destino > 1 ){
-            $query = "SELECT r.codigo AS codigo_ruta, r.activo AS activo, r.tipo AS codigo_tipo, tr.nombre AS tipo, re.estacion AS codigo_estacion, re.orden AS orden, re.tiempo_llegada AS tiempo_llegada, e.nombre AS estacion, e.activo AS estacion_activo FROM ruta AS r INNER JOIN tipo_ruta AS tr ON r.tipo = tr.codigo INNER JOIN ruta_estacion AS re ON r.codigo = re.ruta INNER JOIN estacion AS e ON re.estacion = e.codigo WHERE r.codigo = '" . $ruta . "' AND re.orden >= " . $orden_origen . " AND re.orden <= " . $orden_destino . " ORDER BY re.orden;";
+            $query = "SELECT re.estacion AS codigo_estacion, re.orden AS orden, re.tiempo_llegada AS tiempo_llegada, e.nombre AS estacion, e.activo AS estacion_activo FROM ruta AS r INNER JOIN tipo_ruta AS tr ON r.tipo = tr.codigo INNER JOIN ruta_estacion AS re ON r.codigo = re.ruta INNER JOIN estacion AS e ON re.estacion = e.codigo WHERE r.codigo = '" . $ruta . "' AND re.orden >= " . $orden_origen . " AND re.orden <= " . $orden_destino . " ORDER BY re.orden;";
         } else if( $orden_origen && $orden_origen > 0 ){
-            $query = "SELECT r.codigo AS codigo_ruta, r.activo AS activo, r.tipo AS codigo_tipo, tr.nombre AS tipo, re.estacion AS codigo_estacion, re.orden AS orden, re.tiempo_llegada AS tiempo_llegada, e.nombre AS estacion, e.activo AS estacion_activo FROM ruta AS r INNER JOIN tipo_ruta AS tr ON r.tipo = tr.codigo INNER JOIN ruta_estacion AS re ON r.codigo = re.ruta INNER JOIN estacion AS e ON re.estacion = e.codigo WHERE r.codigo = '" . $ruta . "' AND re.orden >= " . $orden_origen . " ORDER BY re.orden;";
+            $query = "SELECT re.estacion AS codigo_estacion, re.orden AS orden, re.tiempo_llegada AS tiempo_llegada, e.nombre AS estacion, e.activo AS estacion_activo FROM ruta AS r INNER JOIN tipo_ruta AS tr ON r.tipo = tr.codigo INNER JOIN ruta_estacion AS re ON r.codigo = re.ruta INNER JOIN estacion AS e ON re.estacion = e.codigo WHERE r.codigo = '" . $ruta . "' AND re.orden >= " . $orden_origen . " ORDER BY re.orden;";
         } else if( $orden_destino && $orden_destino > 1 ){
-            $query = "SELECT r.codigo AS codigo_ruta, r.activo AS activo, r.tipo AS codigo_tipo, tr.nombre AS tipo, re.estacion AS codigo_estacion, re.orden AS orden, re.tiempo_llegada AS tiempo_llegada, e.nombre AS estacion, e.activo AS estacion_activo FROM ruta AS r INNER JOIN tipo_ruta AS tr ON r.tipo = tr.codigo INNER JOIN ruta_estacion AS re ON r.codigo = re.ruta INNER JOIN estacion AS e ON re.estacion = e.codigo WHERE r.codigo = '" . $ruta . "' AND re.orden <= " . $orden_destino . " ORDER BY re.orden;";
+            $query = "SELECT re.estacion AS codigo_estacion, re.orden AS orden, re.tiempo_llegada AS tiempo_llegada, e.nombre AS estacion, e.activo AS estacion_activo FROM ruta AS r INNER JOIN tipo_ruta AS tr ON r.tipo = tr.codigo INNER JOIN ruta_estacion AS re ON r.codigo = re.ruta INNER JOIN estacion AS e ON re.estacion = e.codigo WHERE r.codigo = '" . $ruta . "' AND re.orden <= " . $orden_destino . " ORDER BY re.orden;";
         } else {
             return getEstacionesPorRuta($ruta, false);
         }

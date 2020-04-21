@@ -13,4 +13,9 @@
         return consultarBBDD($query);
     }
 
+    function getTipoRutaPorCodigo($codigo){
+        $query = "SELECT codigo, nombre FROM tipo_ruta WHERE codigo = '" . $codigo . "';";
+        return consultarBBDD($query);
+    }
+
 ?>
