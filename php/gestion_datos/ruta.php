@@ -6,6 +6,7 @@
     }
 
     function deleteRuta($codigo){
+        //TODO: comprobar líneas que contengan esta ruta.
         $queryDeleteRutaEstacion = "DELETE FROM ruta_estacion WHERE ruta = '" . $codigo . "';";
         $correcto = modificarBBDD($queryDeleteRutaEstacion);
         if( !$correcto ){

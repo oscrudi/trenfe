@@ -6,6 +6,22 @@
     }
 
     function deleteEstacion($codigo){
+        //Obtener las rutas que contengan la estación
+        $result = getRutasPorEstacion($codigo, false);
+        $rutas = array();
+        while( $row = $result->fetch_assoc() ){
+            array_push($rutas, $row["codigo"]);
+        }
+        //Borrar la estación de las rutas
+        foreach( $rutas as $ruta ){
+            $result = getEstacionesPorRuta($ruta);
+            while( $row = $result->fetch_assoc() ){
+                if( $row["codigo_estacion"] == $codigo ){
+                    deleteEstacionFromRuta($ruta, $row["orden"]);
+                }
+            }
+        }
+        //Borrar la estación
         $query = "DELETE FROM estacion WHERE codigo = " . $codigo . ";";
         return modificarBBDD($query);
     }
@@ -21,11 +37,13 @@
     }
 
     function desactivarEstacion($codigo){
+        //Desactivar la estación
         $query = "UPDATE estacion SET activo = 0 WHERE codigo = '" . $codigo . "';";
         $correcto = modificarBBDD($query);
         if( !$correcto ){
             return false;
         }
+        //Desactivar las rutas que no tengan suficientes estaciones activas
         $result = getRutasPorEstacion($codigo);
         $rutas = array();
         while( $row = $result->fetch_assoc() ){
@@ -42,48 +60,67 @@
     function printEstacion($result) {
         $output = "";
         while( $row = $result->fetch_assoc() ){
-            $output .= "Código: " . $row["codigo"] . " - Nombre: " . $row["nombre"] . " - Activo: " . $row["activo"] . " - Código localidad: " . $row["codigo_localidad"] . " - Localidad: " . $row["localidad"] . " - Código provincia: " . $row["codigo_provincia"] . " - Provincia: " . $row["provincia"] . " - Código región: " . $row["codigo_region"] . " - Región: " . $row["region"] . " - Código país: " . $row["codigo_pais"] . " - País: " . $row["pais"] . "<br>";
+            $output .= "Código: " . $row["codigo"] . " - Nombre: " . $row["nombre"] . " - Activo: " . $row["activo"] . " - Código localidad: " . $row["codigo_localidad"] . "<br>";
         }
         return $output;
     }
 
-    function getAllEstacion(){
-        $query = "SELECT e.codigo AS codigo, e.nombre AS nombre, e.activo AS activo, e.codigo_localidad AS codigo_localidad, l.nombre AS localidad, l.codigo_provincia AS codigo_provincia, pr.nombre AS provincia, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM estacion AS e INNER JOIN localidad AS l ON e.codigo_localidad = l.codigo INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo ORDER BY e.nombre;";
+    function getAllEstacion($activo = true){
+        if( $activo ){
+            $query = "SELECT codigo, nombre, activo, codigo_localidad FROM estacion WHERE activo = 1 ORDER BY nombre;";
+        } else {
+            $query = "SELECT codigo, nombre, activo, codigo_localidad FROM estacion ORDER BY nombre;";
+        }
         return consultarBBDD($query);
     }
 
     function getEstacionPorCodigo($codigo){
-        $query = "SELECT e.codigo AS codigo, e.nombre AS nombre, e.activo AS activo, e.codigo_localidad AS codigo_localidad, l.nombre AS localidad, l.codigo_provincia AS codigo_provincia, pr.nombre AS provincia, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM estacion AS e INNER JOIN localidad AS l ON e.codigo_localidad = l.codigo INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo WHERE e.codigo = '" . $codigo . "' ORDER BY e.nombre;";
+        $query = "SELECT codigo, nombre, activo, codigo_localidad FROM estacion WHERE codigo = '" . $codigo . "' ORDER BY nombre;";
         return consultarBBDD($query);
     }
 
-    function getEstacionPorLocalidad($localidad){
-        $query = "SELECT e.codigo AS codigo, e.nombre AS nombre, e.activo AS activo, e.codigo_localidad AS codigo_localidad, l.nombre AS localidad, l.codigo_provincia AS codigo_provincia, pr.nombre AS provincia, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM estacion AS e INNER JOIN localidad AS l ON e.codigo_localidad = l.codigo INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo WHERE e.codigo_localidad = '" . $localidad . "' ORDER BY e.nombre;";
+    function getEstacionPorLocalidad($localidad, $activo = true){
+        if( $activo ){
+            $query = "SELECT codigo, nombre, activo, codigo_localidad FROM estacion WHERE codigo_localidad = '" . $localidad . "' AND activo = 1 ORDER BY nombre;";
+        } else {
+            $query = "SELECT codigo, nombre, activo, codigo_localidad FROM estacion WHERE codigo_localidad = '" . $localidad . "' ORDER BY nombre;";
+        }
         return consultarBBDD($query);
     }
 
-    function getEstacionPorProvincia($provincia){
-        $query = "SELECT e.codigo AS codigo, e.nombre AS nombre, e.activo AS activo, e.codigo_localidad AS codigo_localidad, l.nombre AS localidad, l.codigo_provincia AS codigo_provincia, pr.nombre AS provincia, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM estacion AS e INNER JOIN localidad AS l ON e.codigo_localidad = l.codigo INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo WHERE l.codigo_provincia = '" . $provincia . "' ORDER BY e.nombre;";
+    function getEstacionPorProvincia($provincia, $activo = true){
+        if( $activo ){
+            $query = "SELECT e.codigo AS codigo, e.nombre AS nombre, e.activo AS activo, e.codigo_localidad AS codigo_localidad FROM estacion AS e INNER JOIN localidad AS l ON e.codigo_localidad = l.codigo WHERE l.codigo_provincia = '" . $provincia . "' AND e.activo = 1 ORDER BY e.nombre;";
+        } else {
+            $query = "SELECT e.codigo AS codigo, e.nombre AS nombre, e.activo AS activo, e.codigo_localidad AS codigo_localidad FROM estacion AS e INNER JOIN localidad AS l ON e.codigo_localidad = l.codigo WHERE l.codigo_provincia = '" . $provincia . "' ORDER BY e.nombre;";
+        }
         return consultarBBDD($query);
     }
 
-    function getEstacionPorRegion($region){
-        $query = "SELECT e.codigo AS codigo, e.nombre AS nombre, e.activo AS activo, e.codigo_localidad AS codigo_localidad, l.nombre AS localidad, l.codigo_provincia AS codigo_provincia, pr.nombre AS provincia, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM estacion AS e INNER JOIN localidad AS l ON e.codigo_localidad = l.codigo INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo WHERE pr.codigo_region = '" . $region . "' ORDER BY e.nombre;";
+    function getEstacionPorRegion($region, $activo = true){
+        if( $activo ){
+            $query = "SELECT e.codigo AS codigo, e.nombre AS nombre, e.activo AS activo, e.codigo_localidad AS codigo_localidad FROM estacion AS e INNER JOIN localidad AS l ON e.codigo_localidad = l.codigo INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo WHERE pr.codigo_region = '" . $region . "' AND e.activo = 1 ORDER BY e.nombre;";
+        } else {
+            $query = "SELECT e.codigo AS codigo, e.nombre AS nombre, e.activo AS activo, e.codigo_localidad AS codigo_localidad FROM estacion AS e INNER JOIN localidad AS l ON e.codigo_localidad = l.codigo INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo WHERE pr.codigo_region = '" . $region . "' ORDER BY e.nombre;";
+        }
         return consultarBBDD($query);
     }
 
-    function getEstacionPorPais($pais){
-        $query = "SELECT e.codigo AS codigo, e.nombre AS nombre, e.activo AS activo, e.codigo_localidad AS codigo_localidad, l.nombre AS localidad, l.codigo_provincia AS codigo_provincia, pr.nombre AS provincia, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM estacion AS e INNER JOIN localidad AS l ON e.codigo_localidad = l.codigo INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo WHERE r.codigo_pais = '" . $pais . "' ORDER BY e.nombre;";
+    function getEstacionPorPais($pais, $activo = true){
+        if( $activo ){
+            $query = "SELECT e.codigo AS codigo, e.nombre AS nombre, e.activo AS activo, e.codigo_localidad AS codigo_localidad FROM estacion AS e INNER JOIN localidad AS l ON e.codigo_localidad = l.codigo INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo INNER JOIN region AS r ON pr.codigo_region = r.codigo WHERE r.codigo_pais = '" . $pais . "' AND activo = 1 ORDER BY e.nombre;";
+        } else {
+            $query = "SELECT e.codigo AS codigo, e.nombre AS nombre, e.activo AS activo, e.codigo_localidad AS codigo_localidad FROM estacion AS e INNER JOIN localidad AS l ON e.codigo_localidad = l.codigo INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo INNER JOIN region AS r ON pr.codigo_region = r.codigo WHERE r.codigo_pais = '" . $pais . "' ORDER BY e.nombre;";
+        }
         return consultarBBDD($query);
     }
 
-    function getEstacionPorNombre($nombre){
-        $query = "SELECT e.codigo AS codigo, e.nombre AS nombre, e.activo AS activo, e.codigo_localidad AS codigo_localidad, l.nombre AS localidad, l.codigo_provincia AS codigo_provincia, pr.nombre AS provincia, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM estacion AS e INNER JOIN localidad AS l ON e.codigo_localidad = l.codigo INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo WHERE e.nombre LIKE '" . $nombre . "%' ORDER BY e.nombre;";
-        return consultarBBDD($query);
-    }
-
-    function getEstacionPorActivo($activo){
-        $query = "SELECT e.codigo AS codigo, e.nombre AS nombre, e.activo AS activo, e.codigo_localidad AS codigo_localidad, l.nombre AS localidad, l.codigo_provincia AS codigo_provincia, pr.nombre AS provincia, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM estacion AS e INNER JOIN localidad AS l ON e.codigo_localidad = l.codigo INNER JOIN provincia AS pr ON l.codigo_provincia = pr.codigo INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo WHERE e.activo = '" . $activo . "' ORDER BY e.nombre;";
+    function getEstacionPorNombre($nombre, $activo = true){
+        if( $activo ){
+            $query = "SELECT codigo, nombre, activo, codigo_localidad FROM estacion WHERE nombre LIKE '" . $nombre . "%' AND activo = 1 ORDER BY nombre;";
+        } else {
+            $query = "SELECT codigo, nombre, activo, codigo_localidad FROM estacion WHERE nombre LIKE '" . $nombre . "%' ORDER BY nombre;";
+        }
         return consultarBBDD($query);
     }
 

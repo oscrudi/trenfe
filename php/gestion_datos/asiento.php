@@ -1,43 +1,47 @@
 <?php
 
     function addAsiento($fila, $letra, $grupo = null, $tipo, $vagon){
-        if( $grupo ){
-            $query = "INSERT INTO asiento (fila, letra, grupo, activo, tipo, vagon) VALUES (" . $fila . ", '" . $letra . "', " . $grupo . ", 1, " . $tipo . ", " . $vagon . ");";
-        }else{
-            $query = "INSERT INTO asiento (fila, letra, activo, tipo, vagon) VALUES (" . $fila . ", '" . $letra . "', 1, " . $tipo . ", " . $vagon . ");";
+        $correcto = checkAsientosMax($vagon, false, true);
+        if( !$correcto ){
+            return false;
         }
+        $query = "INSERT INTO asiento (fila, letra, grupo, activo, tipo, vagon) VALUES (" . $fila . ", '" . $letra . "', " . $grupo . ", 0, " . $tipo . ", '" . $vagon . "');";
         return modificarBBDD($query);
     }
 
-    function deleteAsiento($fila, $letra){
-        $query = "DELETE FROM asiento WHERE fila = " . $fila . " AND letra = '" . $letra . "';";
+    function deleteAsiento($fila, $letra, $vagon){
+        $query = "DELETE FROM asiento WHERE fila = " . $fila . " AND letra = '" . $letra . "' AND vagon = '" . $vagon . "';";
+        modificarBBDD($query);
+        $asientos_activos = getAsientoPorVagon($vagon);
+        if( $asientos_activos->num_rows < 1 ){
+            desactivarVagon($vagon);
+        }
+        return true;
+    }
+
+    function updateTipoAsiento($fila, $letra, $vagon, $tipo){
+        $query = "UPDATE asiento SET tipo = " . $tipo . " WHERE fila = " . $fila . " AND letra = '" . $letra . "' AND vagon = '" . $vagon . "';";
         return modificarBBDD($query);
     }
 
-    function updateTipoAsiento($fila, $letra, $tipo){
-        $query = "UPDATE asiento SET tipo = " . $tipo . " WHERE fila = " . $fila . " AND letra = '" . $letra . "';";
+    function updateGrupoAsiento($fila, $letra, $vagon, $grupo = null){
+        $query = "UPDATE asiento SET grupo = " . $grupo . " WHERE fila = " . $fila . " AND letra = '" . $letra . "' AND vagon = '" . $vagon . "';";
         return modificarBBDD($query);
     }
 
-    function updateVagonAsiento($fila, $letra, $vagon){
-        $query = "UPDATE asiento SET vagon = " . $vagon . " WHERE fila = " . $fila . " AND letra = '" . $letra . "';";
-        return modificarBBDD($query);
-    }
-
-    function updateGrupoAsiento($fila, $letra, $grupo = null){
-        $query = "UPDATE asiento SET grupo = " . $grupo . " WHERE fila = " . $fila . " AND letra = '" . $letra . "';";
-        return modificarBBDD($query);
-    }
-
-    function activarAsiento($fila, $letra){
-        $query = "UPDATE asiento SET activo = 1 WHERE fila = " . $fila . " AND letra = '" . $letra . "';";
+    function activarAsiento($fila, $letra, $vagon){
+        $query = "UPDATE asiento SET activo = 1 WHERE fila = " . $fila . " AND letra = '" . $letra . "' AND vagon = '" . $vagon . "';";
         return modificarBBDD($query);
     }
 
     function desactivarAsiento($fila, $letra){
-        //TODO: comprobar si el vagón que lo contiene no tiene más asientos activos
-        $query = "UPDATE asiento SET activo = 0 WHERE fila = " . $fila . " AND letra = '" . $letra . "';";
-        return modificarBBDD($query);
+        $query = "UPDATE asiento SET activo = 0 WHERE fila = " . $fila . " AND letra = '" . $letra . "' AND vagon = '" . $vagon . "';";
+        modificarBBDD($query);
+        $asientos_activos = getAsientoPorVagon($vagon);
+        if( $asientos_activos->num_rows < 1 ){
+            desactivarVagon($vagon);
+        }
+        return true;
     }
 
     function printAsiento($result) {
@@ -57,15 +61,15 @@
         return consultarBBDD($query);
     }
 
-    function getAsientoPorCodigo($fila, $letra){
-        $query = "SELECT fila, letra, grupo, tipo, vagon, activo FROM asiento WHERE fila = " . $fila . " AND letra = '" . $letra . "';";
+    function getAsientoPorCodigo($fila, $letra, $vagon){
+        $query = "SELECT fila, letra, grupo, tipo, vagon, activo FROM asiento WHERE fila = " . $fila . " AND letra = '" . $letra . "' AND vagon = '" . $vagon . "';";
     }
 
-    function getAsientoPorFila($fila, $activo = true){
+    function getAsientoPorFila($fila, $vagon, $activo = true){
         if( $activo ){
-            $query = "SELECT fila, letra, grupo, tipo, vagon, activo FROM asiento WHERE fila = " . $fila . " AND activo = 1 ORDER BY letra;";
+            $query = "SELECT fila, letra, grupo, tipo, vagon, activo FROM asiento WHERE fila = " . $fila . " AND vagon = '" . $vagon . "' AND activo = 1 ORDER BY letra;";
         } else {
-            $query = "SELECT fila, letra, grupo, tipo, vagon, activo FROM asiento WHERE fila = " . $fila . " ORDER BY letra;";
+            $query = "SELECT fila, letra, grupo, tipo, vagon, activo FROM asiento WHERE fila = " . $fila . " AND vagon = '" . $vagon . "' ORDER BY letra;";
         }
         return consultarBBDD($query);
     }
@@ -79,11 +83,11 @@
         return consultarBBDD($query);
     }
 
-    function getAsientoPorGrupo($grupo, $activo = true){
+    function getAsientoPorGrupo($grupo, $vagon, $activo = true){
         if( $activo ){
-            $query = "SELECT fila, letra, grupo, tipo, vagon, activo FROM asiento WHERE grupo = " . $grupo . " AND activo = 1 ORDER BY fila, letra;";
+            $query = "SELECT fila, letra, grupo, tipo, vagon, activo FROM asiento WHERE grupo = " . $grupo . " AND vagon = '" . $vagon . "' AND activo = 1 ORDER BY fila, letra;";
         } else {
-            $query = "SELECT fila, letra, grupo, tipo, vagon, activo FROM asiento WHERE grupo = " . $grupo . " ORDER BY fila, letra;";
+            $query = "SELECT fila, letra, grupo, tipo, vagon, activo FROM asiento WHERE grupo = " . $grupo . " AND vagon = '" . $vagon . "' ORDER BY fila, letra;";
         }
         return consultarBBDD($query);
     }
@@ -99,11 +103,13 @@
 
     function getAsientoPorTren($tren, $activo = true){
         if( $activo ){
+            //Obtener vagones activos del tren
             $result_vagones = getVagonPorTren($tren);
             $vagones = array();
             while( $row_vagones = $result_vagones->fetch_assoc() ){
                 array_push($vagones, $row_vagones["codigo"]);
             }
+            //Obtener asientos activos de los vagones
             $asientos = array();
             foreach( $vagones as $vagon ){
                 $result_asientos = getAsientoPorVagon($vagon);
@@ -112,11 +118,13 @@
                 }
             }
         } else {
+            //Obtener vagones del tren
             $result_vagones = getVagonPorTren($tren, false);
             $vagones = array();
             while( $row_vagones = $result_vagones->fetch_assoc() ){
                 array_push($vagones, $row_vagones["codigo"]);
             }
+            //Obtener asientos de los vagones
             $asientos = array();
             foreach( $vagones as $vagon ){
                 $result_asientos = getAsientoPorVagon($vagon, false);
@@ -126,6 +134,15 @@
             }
         }
         return $asientos;
+    }
+
+    function getGruposPorVagon($vagon, $activo = false){
+        if( $activo ){
+            $query = "SELECT grupo FROM asiento WHERE vagon = " . $vagon . " AND activo = 1 GROUP BY grupo ORDER BY grupo;";
+        } else {
+            $query = "SELECT grupo FROM asiento WHERE vagon = " . $vagon . " GROUP BY grupo ORDER BY grupo;";
+        }
+        return consultarBBDD($query);
     }
 
 ?>
