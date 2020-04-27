@@ -6,7 +6,11 @@
     }
 
     function deleteRuta($codigo){
-        //TODO: comprobar líneas que contengan esta ruta.
+        //Desactivar líneas que utilicen la ruta
+        $result = getLineaPorRuta($codigo);
+        while( $row = $result->fetch_assoc() ){
+            desactivarLinea($row["codigo"]);
+        }
         $queryDeleteRutaEstacion = "DELETE FROM ruta_estacion WHERE ruta = '" . $codigo . "';";
         $correcto = modificarBBDD($queryDeleteRutaEstacion);
         if( !$correcto ){
@@ -26,7 +30,11 @@
     }
 
     function desactivarRuta($codigo){
-        //TODO: desactivar líneas que contengan esta ruta.
+        //Desactivar líneas que utilicen la ruta
+        $result = getLineaPorRuta($codigo);
+        while( $row = $result->fetch_assoc() ){
+            desactivarLinea($row["codigo"]);
+        }
         $query = "UPDATE ruta SET activo = 0 WHERE codigo = '" . $codigo . "';";
         return modificarBBDD($query);
     }

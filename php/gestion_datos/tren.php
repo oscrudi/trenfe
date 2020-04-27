@@ -32,7 +32,11 @@
     }
 
     function desactivarTren($codigo){
-        //TODO: desactivar línea que lo contenga
+        //Desactivar líneas que utilicen el tren
+        $result = getLineaPorTren($codigo);
+        while( $row = $result->fetch_assoc() ){
+            desactivarLinea($row["codigo"]);
+        }
         $query = "UPDATE tren SET activo = 0 WHERE codigo = '" . $codigo . "';";
         return modificarBBDD($query);
     }
