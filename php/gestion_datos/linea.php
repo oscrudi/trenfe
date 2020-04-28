@@ -112,8 +112,25 @@
         return consultarBBDD($query);
     }
 
-    function calcularHoraPorEstacion($linea, $estacion){
-        //TODO: obtener hora a la que pasa por la estacion. Puede pasar 2 veces por la misma estación
+    function calcularHoraPorEstacion($codigo_linea, $codigo_estacion){
+        $result = getLineaPorCodigo($codigo_linea);
+        $linea = $result->fetch_assoc();
+        $ruta = $linea["ruta"];
+        $result = getEstacionesPorRuta($ruta);
+        $ordenes_estacion = array();
+        while( $row = $result->fetch_assoc() ){
+            if( $row["codigo_estacion"] == $codigo_estacion ){
+                array_push($ordenes_estacion, $row["orden"]);
+            }
+        }
+        $hora_salida = $linea["hora_salida"];
+        $horas_llegada = array();
+        foreach( $ordenes_estacion as $orden_estacion ){
+            $tiempo_llegada = calcularDuracionRuta($ruta, false, $orden_estacion);
+            $hora_llegada = date("H:i:s", strtotime("+".$tiempo_llegada." minutes", strtotime($hora_salida)));
+            array_push($horas_llegada, $hora_llegada);
+        }
+        return $horas_llegada;
     }
 
 ?>
