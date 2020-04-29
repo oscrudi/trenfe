@@ -32,7 +32,7 @@
             }
         }
         if( is_array($dias_activos) && count($dias_activos) == 7 ){
-            $query = "UPDATE linea SET lunes_activo = '" . $dias_activos[0] . "', martes_activo = '" . $dias_activos[1] . "', miercoles_activo = '" . $dias_activos[2] . "', jueves_activo = '" . $dias_activos[3] . "', viernes_activo = '" . $dias_activos[4] . "', sabado_activo = '" . $dias_activos[5] . "', domingo_activo = '" . $dias_activos[6] . "' WHERE codigo = '" . $codigo . "';";
+            $query = "UPDATE linea SET activo_lunes = '" . $dias_activos[0] . "', activo_martes = '" . $dias_activos[1] . "', activo_miercoles = '" . $dias_activos[2] . "', activo_jueves = '" . $dias_activos[3] . "', activo_viernes = '" . $dias_activos[4] . "', activo_sabado = '" . $dias_activos[5] . "', activo_domingo = '" . $dias_activos[6] . "' WHERE codigo = '" . $codigo . "';";
             return modificarBBDD($query);
         }
         return false;
