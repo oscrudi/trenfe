@@ -112,7 +112,7 @@
         return consultarBBDD($query);
     }
 
-    function calcularHoraPorEstacion($codigo_linea, $codigo_estacion){
+    function calcularHoraLlegadaPorEstacion($codigo_linea, $codigo_estacion){
         $result = getLineaPorCodigo($codigo_linea);
         $linea = $result->fetch_assoc();
         $ruta = $linea["ruta"];
