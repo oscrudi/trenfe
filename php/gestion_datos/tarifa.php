@@ -116,7 +116,7 @@
                 array_push($tarifas, $row);
             }
         }
-        return $tarifas
+        return $tarifas;
     }
 
     function getTarifasPorRequisitos($dia = null, $tramo_horario = null, $tipo_ruta = null, $tipo_tren = null, $tipo_vagon = null, $tipo_asiento = null){
@@ -184,7 +184,7 @@
         if( count($tarifas) == 0 ){
             return false;
         }
-        $tarifa_mas_cara = $tarifas[0]
+        $tarifa_mas_cara = $tarifas[0];
         foreach( $tarifas as $tarifa ){
             $precio_mas_caro = $tarifa_mas_cara["precio_base"] + ( $tarifa_mas_cara["incremento_precio"] * $num_paradas );
             $precio_nuevo = $tarifa["precio_base"] + ( $tarifa["incremento_precio"] * $num_paradas );
