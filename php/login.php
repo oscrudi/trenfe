@@ -1,48 +1,31 @@
 <?php
 
     class User {
-        // Opciones de contraseña
-        const HASH = PASSWORD_DEFAULT;
-        const COST = 10;
-        // Almacenamiento de datos del usuario
-        public $data;
+        private $logged = false;
+        private $dni;
+        private $nombre;
+        private $genero;
+        private $nivel_permisos;
 
         public function __construct($user, $pass) {
-            $usuario = checkUser($user);
-            if( $usuario != false ){
-                //TODO: check pass
-            }
-        }
-
-        public function guardarEnBBDD() {
-            //TODO: Guardar los datos de $data en la base de datos
-        }
-
-        public function updatePassword($password) {
-            $this->data->passwordHash = password_hash($password, self::HASH, ['cost' => self::COST]);
-        }
-        // Logear un usuario:
-        public function login($password) {
-            // Primero comprobamos si se ha empleado una contraseña correcta:
-            echo "Login: ", $this->data->passwordHash, "\n";
-            if (password_verify($password, $this->data->passwordHash)) {
-                // Exito, ahora se comprueba si la contraseña necesita un rehash:
-                if (password_needs_rehash($this->data->passwordHash, self::HASH, ['cost' => self::COST])) {
-                    // Tenemos que hacer rehash en la contraseña y guardarla.  Simplemente se llama a setPassword():
-                    $this->setPassword($password);
-                    $this->save();
+            $usuario = $this->checkUser($user);
+            if( $usuario != false && $usuario["activo"] == 1 ){
+                if( checkPassword($usuario, $pass) ){
+                    $this->logged = true;
+                    $this->dni = $usuario["dni"];
+                    $this->nombre = $usuario["nombre"];
+                    $this->genero = $usuario["genero"];
+                    $this->nivel_permisos = $usuario["nivel_permisos"];
                 }
-                return true; // O hacer lo necesario para indicar que el usuario se ha logeado.
             }
-            return false;
         }
 
         public function checkUser($user){
             $usuario = trim($user);
             $result = false;
-            if( checkDNI($usuario) ){
+            if( $this->checkDNI($usuario) ){
                 $result = getUsuarioPorDNI($usuario);
-            } elseif( checkEmail($usuario) ){
+            } elseif( $this->checkEmail($usuario) ){
                 $result = getUsuarioPorEmail($usuario);
             }
             if( $result != false ){
@@ -63,6 +46,16 @@
                 return false;
             }
             return true;
+        }
+
+        public function checkPassword($user, $password) {
+            if( password_verify($password, $user["contrasena"]) ){
+                if( password_needs_rehash($password, HASH, ['cost' => COST]) ){
+                    updateContrasenaUsuario($user[$dni], $password);
+                }
+                return true;
+            }
+            return false;
         }
 
     }
