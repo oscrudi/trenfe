@@ -195,14 +195,6 @@
         return $tarifa_mas_cara;
     }
 
-    function printTarifa($result) {
-        $output = "";
-        while( $row = $result->fetch_assoc() ){
-            $output .= "Código: " . $row["codigo"] . " - Nombre: " . $row["nombre"] . " - Fecha Inicio: " . $row["fecha_inicio"] . " - Fecha Fin: " . $row["fecha_fin"] . " - Precio Base: " . $row["precio_base"] . " - Incremento Precio: " . $row["incremento_precio"] . " - Tramo Horario: " . $row["tramo_horario"] . " - Tipo Ruta: " . $row["tipo_ruta"] . " - Tipo Tren: " . $row["tipo_tren"] . " - Tipo Vagón: " . $row["tipo_vagon"] . " - Tipo Asiento: " . $row["tipo_asiento"] . " - Activo Lunes: " . $row["activo_lunes"] . " - Activo Martes: " . $row["activo_martes"] . " - Activo Miércoles: " . $row["activo_miercoles"] . " - Activo Jueves: " . $row["activo_jueves"] . " - Activo Viernes: " . $row["activo_viernes"] . " - Activo Sábado: " . $row["activo_sabado"] . " - Activo Domingo: " . $row["activo_domingo"] . "<br>";
-        }
-        return $output;
-    }
-
     function getAllTarifa(){
         $query = "SELECT * FROM tarifa ORDER BY codigo;";
         return consultarBBDD($query);
