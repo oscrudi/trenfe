@@ -75,33 +75,25 @@
         return true;
     }
 
-    function printTren($result) {
-        $output = "";
-        while( $row = $result->fetch_assoc() ){
-            $output .= "Código: " . $row["codigo"] . " - Tipo Tren: " . $row["tipo"] . " - Activo: " . $row["activo"] . "<br>";
-        }
-        return $output;
-    }
-
     function getAllTren($activo = true){
-        if( $activo ){
-            $query = "SELECT codigo, tipo, activo FROM tren WHERE activo = 1 ORDER BY codigo;";
+        if( !$activo ){
+            $query = "SELECT * FROM tren ORDER BY codigo;";
         }else{
-            $query = "SELECT codigo, tipo, activo FROM tren ORDER BY codigo;";
+            $query = "SELECT * FROM tren WHERE activo = 1 ORDER BY codigo;";
         }
         return consultarBBDD($query);
     }
 
     function getTrenPorCodigo($codigo){
-        $query = "SELECT codigo, tipo, activo FROM tren WHERE codigo = '" . $codigo . "';";
+        $query = "SELECT * FROM tren WHERE codigo = '" . $codigo . "';";
         return consultarBBDD($query);
     }
 
     function getTrenPorTipo($tipo, $activo = true){
-        if( $activo ){
-            $query = "SELECT codigo, tipo, activo FROM tren WHERE tipo = " . $tipo . " AND activo = 1 ORDER BY codigo;";
+        if( !$activo ){
+            $query = "SELECT * FROM tren WHERE tipo = " . $tipo . " ORDER BY codigo;";
         } else {
-            $query = "SELECT codigo, tipo, activo FROM tren WHERE tipo = " . $tipo . " ORDER BY codigo;";
+            $query = "SELECT * FROM tren WHERE tipo = " . $tipo . " AND activo = 1 ORDER BY codigo;";
         }
         return consultarBBDD($query);
     }
