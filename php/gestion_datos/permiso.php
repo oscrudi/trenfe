@@ -5,14 +5,6 @@
         return modificarBBDD($query);
     }
 
-    function printPermiso($result){
-        $output = "";
-        while( $row = $result->fetch_assoc() ){
-            $output .= "Código: " . $row["codigo"] . " - Nombre: " . $row["nombre"] . "<br>";
-        }
-        return $output;
-    }
-
     function getAllPermiso(){
         $query = "SELECT * FROM permiso ORDER BY nombre;";
         return consultarBBDD($query);
