@@ -15,21 +15,13 @@
         return modificarBBDD($query);
     }
 
-    function printTipoAsiento($result) {
-        $output = "";
-        while( $row = $result->fetch_assoc() ){
-            $output .= "Código: " . $row["codigo"] . " - Nombre: " . $row["nombre"] . "<br>";
-        }
-        return $output;
-    }
-
     function getAllTipoAsiento(){
-        $query = "SELECT codigo, nombre FROM tipo_asiento ORDER BY nombre;";
+        $query = "SELECT * FROM tipo_asiento ORDER BY nombre;";
         return consultarBBDD($query);
     }
 
     function getTipoAsientoPorCodigo($codigo){
-        $query = "SELECT codigo, nombre FROM tipo_asiento WHERE codigo = '" . $codigo . "';";
+        $query = "SELECT * FROM tipo_asiento WHERE codigo = '" . $codigo . "';";
         return consultarBBDD($query);
     }
 
