@@ -6,7 +6,6 @@
     }
 
     function deleteLinea($codigo){
-        //TODO: comprobar billetes.
         $query = "DELETE FROM linea WHERE codigo = '" . $codigo . "';";
         return modificarBBDD($query);
     }
@@ -84,34 +83,6 @@
         return false;
     }
 
-    function printLinea($result) {
-        $output = "";
-        while( $row = $result->fetch_assoc() ){
-            $output .= "Código: " . $row["codigo"] . " - Ruta: " . $row["ruta"] . " - Tren: " . $row["tren"] . " - Hora Salida: " . $row["hora_salida"] . " - Activo Lunes: " . $row["activo_lunes"] . " - Activo Martes: " . $row["activo_martes"] . " - Activo Miércoles: " . $row["activo_miercoles"] . " - Activo Jueves: " . $row["activo_jueves"] . " - Activo Viernes: " . $row["activo_viernes"] . " - Activo Sábado: " . $row["activo_sabado"] . " - Activo Domingo: " . $row["activo_domingo"] . "<br>";
-        }
-        return $output;
-    }
-
-    function getAllLinea(){
-        $query = "SELECT codigo, ruta, tren, hora_salida, activo_lunes, activo_martes, activo_miercoles, activo_jueves, activo_viernes, activo_sabado, activo_domingo FROM linea ORDER BY codigo;";
-        return consultarBBDD($query);
-    }
-
-    function getLineaPorCodigo($codigo){
-        $query = "SELECT codigo, ruta, tren, hora_salida, activo_lunes, activo_martes, activo_miercoles, activo_jueves, activo_viernes, activo_sabado, activo_domingo FROM linea WHERE codigo = '" . $codigo . "';";
-        return consultarBBDD($query);
-    }
-
-    function getLineaPorRuta($ruta){
-        $query = "SELECT codigo, ruta, tren, hora_salida, activo_lunes, activo_martes, activo_miercoles, activo_jueves, activo_viernes, activo_sabado, activo_domingo FROM linea WHERE ruta = '" . $ruta . "';";
-        return consultarBBDD($query);
-    }
-
-    function getLineaPorTren($tren){
-        $query = "SELECT codigo, ruta, tren, hora_salida, activo_lunes, activo_martes, activo_miercoles, activo_jueves, activo_viernes, activo_sabado, activo_domingo FROM linea WHERE tren = '" . $tren . "';";
-        return consultarBBDD($query);
-    }
-
     function calcularHoraLlegadaPorEstacion($codigo_linea, $codigo_estacion){
         $result = getLineaPorCodigo($codigo_linea);
         $linea = $result->fetch_assoc();
@@ -131,6 +102,36 @@
             array_push($horas_llegada, $hora_llegada);
         }
         return $horas_llegada;
+    }
+
+    function calcularHoraLlegadaPorOrden($codigo_linea, $orden_estacion){
+        $result = getLineaPorCodigo($codigo_linea);
+        $linea = $result->fetch_assoc();
+        $ruta = $linea["ruta"];
+        $hora_salida = $linea["hora_salida"];
+        $tiempo_llegada = calcularDuracionRuta($ruta, false, $orden_estacion);
+        $hora_llegada = date("H:i:s", strtotime("+".$tiempo_llegada." minutes", strtotime($hora_salida)));
+        return $hora_llegada;
+    }
+
+    function getAllLinea(){
+        $query = "SELECT * FROM linea ORDER BY codigo;";
+        return consultarBBDD($query);
+    }
+
+    function getLineaPorCodigo($codigo){
+        $query = "SELECT * FROM linea WHERE codigo = '" . $codigo . "';";
+        return consultarBBDD($query);
+    }
+
+    function getLineaPorRuta($ruta){
+        $query = "SELECT * FROM linea WHERE ruta = '" . $ruta . "';";
+        return consultarBBDD($query);
+    }
+
+    function getLineaPorTren($tren){
+        $query = "SELECT * FROM linea WHERE tren = '" . $tren . "';";
+        return consultarBBDD($query);
     }
 
 ?>
