@@ -15,36 +15,28 @@
         return modificarBBDD($query);
     }
 
-    function printProvincia($result){
-        $output = "";
-        while( $row = $result->fetch_assoc() ){
-            $output .= "Código: " . $row["codigo"] . " - Nombre: " . $row["nombre"] . " - Código región: " . $row["codigo_region"] . " - Región: " . $row["region"] . " - Código país: " . $row["codigo_pais"] . " - País: " . $row["pais"] . "<br>";
-        }
-        return $output;
-    }
-
     function getAllProvincia(){
-        $query = "SELECT pr.codigo AS codigo, pr.nombre AS nombre, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM provincia AS pr INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo ORDER BY pr.nombre;";
+        $query = "SELECT * FROM provincia ORDER BY nombre;";
         return consultarBBDD($query);
     }
 
     function getProvinciaPorCodigo($codigo){
-        $query = "SELECT pr.codigo AS codigo, pr.nombre AS nombre, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM provincia AS pr INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo WHERE pr.codigo = '" . $codigo . "' ORDER BY pr.nombre;";
+        $query = "SELECT * FROM provincia WHERE codigo = '" . $codigo . "';";
         return consultarBBDD($query);
     }
 
     function getProvinciaPorRegion($region){
-        $query = "SELECT pr.codigo AS codigo, pr.nombre AS nombre, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM provincia AS pr INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo WHERE r.codigo = '" . $region . "' ORDER BY pr.nombre;";
+        $query = "SELECT * FROM provincia WHERE codigo_region = '" . $region . "' ORDER BY nombre;";
         return consultarBBDD($query);
     }
 
     function getProvinciaPorPais($pais){
-        $query = "SELECT pr.codigo AS codigo, pr.nombre AS nombre, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM provincia AS pr INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo WHERE p.codigo = '" . $pais . "' ORDER BY pr.nombre;";
+        $query = "SELECT p.* FROM provincia AS p INNER JOIN region AS r ON p.codigo_region = r.codigo WHERE r.codigo_pais = '" . $pais . "' ORDER BY p.nombre;";
         return consultarBBDD($query);
     }
 
     function getProvinciaPorNombre($nombre){
-        $query = "SELECT pr.codigo AS codigo, pr.nombre AS nombre, pr.codigo_region AS codigo_region, r.nombre AS region, r.codigo_pais AS codigo_pais, p.nombre AS pais FROM provincia AS pr INNER JOIN region AS r ON pr.codigo_region = r.codigo INNER JOIN pais as p ON r.codigo_pais = p.codigo WHERE pr.nombre LIKE '" . $nombre . "%' ORDER BY pr.nombre;";
+        $query = "SELECT * FROM provincia WHERE nombre LIKE '" . $nombre . "%' ORDER BY nombre;";
         return consultarBBDD($query);
     }
 
