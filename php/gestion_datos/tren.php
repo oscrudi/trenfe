@@ -1,100 +1,99 @@
 <?php
 
-    function addTren($codigo, $tipo){
-        $query = "INSERT INTO tren (codigo, tipo, activo) VALUES ('" . $codigo . "', " . $tipo . ", 0);";
+    const HASH = PASSWORD_DEFAULT;
+    const COST = 10;
+
+    function addUsuario($dni, $nombre, $apellido_primero, $apellido_segundo, $genero, $fecha_nacimiento, $telefono, $email, $contrasena, $nivel_permisos){
+        $query = "INSERT INTO usuario (dni, nombre, apellido_primero, apellido_segundo, genero, fecha_nacimiento, telefono, email, contrasena, nivel_permisos, activo) VALUES ('" . $dni . "', '" . $nombre . "', '" . $apellido_primero . "', '" . $apellido_segundo . "', '" . $genero . "', " . $fecha_nacimiento . ", '" . $telefono . "', '" . $email . "', '" . $contrasena . "', " . $nivel_permisos . ", 1);";
         return modificarBBDD($query);
     }
 
-    function deleteTren($codigo){
-        //Borrar vagones del tren
-        $result = getVagonPorTren($codigo, false);
-        while( $row = $result->fetch_assoc() ){
-            deleteVagon($row["codigo"]);
+    function deleteUsuario($dni){
+        $query = "DELETE FROM usuario WHERE dni = " . $dni . ";";
+        return modificarBBDD($query);
+    }
+
+    function updateContrasenaUsuario($dni, $contrasena) {
+        $password = password_hash($contrasena, HASH, ['cost' => COST]);
+        $query = "UPDATE usuario SET contrasena = '" . $password . "' WHERE dni = '" . $dni . "';";
+        return modificarBBDD($query);
+    }
+
+    function updateNombreUsuario($dni, $nombre = false, $apellido_primero = false, $apellido_segundo = false){
+        if( !$nombre && !$apellido_primero && !$apellido_segundo ){
+            return true;
         }
-        //Borrar tren
-        $query = "DELETE FROM tren WHERE codigo = '" . $codigo . "';";
-        return modificarBBDD($query);
-    }
-
-    function updateTipoTren($codigo, $tipo){
-        //Comprobar que el numero de vagones del tren no supera el máximo del nuevo tipo
-        $correcto = checkVagonesMax($codigo, $tipo);
-        if( !$correcto ){
-            return false;
+        $query = "UPDATE usuario SET ";
+        if( $nombre != false ){
+            $query .= "nombre = '" . $nombre . "' ";
         }
-        $query = "UPDATE tren SET tipo = " . $tipo . " WHERE codigo = '" . $codigo . "';";
-        return modificarBBDD($query);
-    }
-
-    function activarTren($codigo){
-        $query = "UPDATE tren SET activo = 1 WHERE codigo = '" . $codigo . "';";
-        return modificarBBDD($query);
-    }
-
-    function desactivarTren($codigo){
-        //Desactivar líneas que utilicen el tren
-        $result = getLineaPorTren($codigo);
-        while( $row = $result->fetch_assoc() ){
-            desactivarLinea($row["codigo"]);
-        }
-        $query = "UPDATE tren SET activo = 0 WHERE codigo = '" . $codigo . "';";
-        return modificarBBDD($query);
-    }
-
-    function checkVagonesMax($tren, $tipo_nuevo = false, $vagon_extra = false){
-        if( !$tipo_nuevo ){
-            //Obtener tipo actual del tren
-            $tipo_tren = false;
-            $result = getTrenPorCodigo($tren);
-            $tipo_tren = $result->fetch_assoc()["tipo"];
-            if( !$tipo_tren ){
-                return false;
+        if( $apellido_primero != false ){
+            if( $nombre != false ){
+                $query .= ", ";
             }
-        } else {
-            $tipo_tren = $tipo_nuevo;
+            $query .= "apellido_primero = '" . $apellido_primero . "' ";
         }
-        //Obtener vagones máximos del tipo de tren
-        $vagones_max = false;
-        $result = getTipoTrenPorCodigo($tipo_tren);
-        $vagones_max = $result->fetch_assoc()["vagones_max"];
-        if( !$vagones_max ){
-            return false;
+        if( $apellido_segundo != false ){
+            if( $nombre != false || $apellido_primero != false ){
+                $query .= ", ";
+            }
+            $query .= "apellido_segundo = '" . $apellido_segundo . "' ";
         }
-        //Obtener vagones del tren
-        $result = getVagonPorTren($tren, false);
-        $vagones = 0;
-        if( $result != false ){
-            $vagones = $result->num_rows;
-        }
-        if( $vagon_extra ){
-            $vagones++;
-        }
-        if( $vagones_max < $vagones ){
-            return false;
-        }
-        return true;
+        $query .= "WHERE dni = '" . $dni . "';";
+        return modificarBBDD($query);
     }
 
-    function getAllTren($activo = true){
+    function updateGeneroUsuario($dni, $genero){
+        $query = "UPDATE usuario SET genero = '" . $genero . "' WHERE dni = '" . $dni . "';";
+        return modificarBBDD($query);
+    }
+
+    function updateFechaNacimientoUsuario($dni, $fecha_nacimiento){
+        $query = "UPDATE usuario SET fecha_nacimiento = " . $fecha_nacimiento . " WHERE dni = '" . $dni . "';";
+        return modificarBBDD($query);
+    }
+
+    function updateTelefonoUsuario($dni, $telefono){
+        $query = "UPDATE usuario SET telefono = '" . $telefono . "' WHERE dni = '" . $dni . "';";
+        return modificarBBDD($query);
+    }
+
+    function updateEmailUsuario($dni, $email){
+        $query = "UPDATE usuario SET email = '" . $email . "' WHERE dni = '" . $dni . "';";
+        return modificarBBDD($query);
+    }
+
+    function updateNivelPermisos($dni, $nivel_permisos){
+        $query = "UPDATE usuario SET nivel_permisos = '" . $nivel_permisos . "' WHERE dni = '" . $dni . "';";
+        return modificarBBDD($query);
+    }
+
+    function activarUsuario($dni){
+        $query = "UPDATE usuario SET activo = 1 WHERE dni = '" . $dni . "';";
+        return modificarBBDD($query);
+    }
+
+    function desactivarUsuario($dni){
+        $query = "UPDATE usuario SET activo = 0 WHERE dni = '" . $dni . "';";
+        return modificarBBDD($query);
+    }
+
+    function getAllUsuario($activo = false){
         if( !$activo ){
-            $query = "SELECT * FROM tren ORDER BY codigo;";
-        }else{
-            $query = "SELECT * FROM tren WHERE activo = 1 ORDER BY codigo;";
+            $query = "SELECT * FROM usuario ORDER BY dni;";
+        } else {
+            $query = "SELECT * FROM usuario WHERE activo = 1 ORDER BY dni;";
         }
         return consultarBBDD($query);
     }
 
-    function getTrenPorCodigo($codigo){
-        $query = "SELECT * FROM tren WHERE codigo = '" . $codigo . "';";
+    function getUsuarioPorDNI($dni){
+        $query = "SELECT * FROM usuario WHERE dni = '" . $dni . "';";
         return consultarBBDD($query);
     }
 
-    function getTrenPorTipo($tipo, $activo = true){
-        if( !$activo ){
-            $query = "SELECT * FROM tren WHERE tipo = " . $tipo . " ORDER BY codigo;";
-        } else {
-            $query = "SELECT * FROM tren WHERE tipo = " . $tipo . " AND activo = 1 ORDER BY codigo;";
-        }
+    function getUsuarioPorEmail($email){
+        $query = "SELECT * FROM usuario WHERE email = '" . $email . "';";
         return consultarBBDD($query);
     }
 
